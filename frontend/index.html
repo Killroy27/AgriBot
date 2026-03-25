@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AgriBot - Assistant IA RAG interne pour Limagrain. Posez vos questions sur la documentation interne.">
+    <title>AgriBot — Assistant IA Limagrain</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌾</text></svg>">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Backdrop (Mobile) -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+        <!-- === Sidebar === -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="#" class="logo">
+                    <div class="logo-icon">
+                        <i data-lucide="wheat" class="lucide-icon"></i>
+                    </div>
+                    <div class="logo-text">
+                        <h1>AgriBot</h1>
+                        <span>Limagrain AI Assistant</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="sidebar-content">
+                <!-- Quick Actions -->
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Actions rapides</div>
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" onclick="Chat.sendSuggestion('Quelles sont les valeurs de Limagrain ?')">
+                            <i data-lucide="landmark" class="lucide-icon"></i>
+                            <span>Valeurs Limagrain</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="Chat.sendSuggestion('Quelle est la stratégie Data & IA ?')">
+                            <i data-lucide="brain-circuit" class="lucide-icon"></i>
+                            <span>Stratégie Data & IA</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="Chat.sendSuggestion('Quels sont les chiffres clés de Limagrain ?')">
+                            <i data-lucide="bar-chart-3" class="lucide-icon"></i>
+                            <span>Chiffres clés</span>
+                        </button>
+                        <button class="quick-action-btn" onclick="Chat.sendSuggestion('Quels sont les métiers de Limagrain ?')">
+                            <i data-lucide="sprout" class="lucide-icon"></i>
+                            <span>Métiers du groupe</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Documents -->
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">
+                        <i data-lucide="folder-open" class="lucide-icon-sm"></i>
+                        Documents indexés
+                    </div>
+                    <div class="doc-list" id="docList">
+                        <div class="doc-item" style="justify-content: center; color: var(--text-tertiary); font-size: var(--text-sm);">
+                            <i data-lucide="loader-2" class="lucide-icon-sm spin"></i>
+                            Chargement...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">
+                        <i data-lucide="activity" class="lucide-icon-sm"></i>
+                        Statistiques
+                    </div>
+                    <div class="stats-bar">
+                        <div class="stat-item">
+                            <i data-lucide="file-text" class="lucide-icon-sm"></i>
+                            <span class="stat-value" id="statDocs">-</span>
+                            <span class="stat-label">docs</span>
+                        </div>
+                        <div class="stat-item">
+                            <i data-lucide="puzzle" class="lucide-icon-sm"></i>
+                            <span class="stat-value" id="statChunks">-</span>
+                            <span class="stat-label">chunks</span>
+                        </div>
+                        <div class="stat-item">
+                            <i data-lucide="cpu" class="lucide-icon-sm"></i>
+                            <span class="stat-value" id="statModel">-</span>
+                            <span class="stat-label">modèle</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="theme-toggle">
+                    <button class="theme-btn active" id="lightBtn" onclick="App.setTheme('light')" title="Mode clair">
+                        <i data-lucide="sun" class="lucide-icon-sm"></i>
+                    </button>
+                    <button class="theme-btn" id="darkBtn" onclick="App.setTheme('dark')" title="Mode sombre">
+                        <i data-lucide="moon" class="lucide-icon-sm"></i>
+                    </button>
+                </div>
+                <div class="status-badge" id="statusBadge">
+                    <span class="status-dot"></span>
+                    <span>En ligne</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- === Main Content === -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header-bar">
+                <div class="header-left">
+                    <button class="menu-toggle" id="menuToggle" onclick="App.toggleSidebar()">
+                        <i data-lucide="menu" class="lucide-icon"></i>
+                    </button>
+                    <div>
+                        <div class="header-title">
+                            <i data-lucide="message-circle" class="lucide-icon-sm"></i>
+                            Conversation
+                        </div>
+                        <div class="header-subtitle">Posez vos questions sur la documentation interne</div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="header-btn" onclick="Upload.openModal()">
+                        <i data-lucide="upload" class="lucide-icon-sm"></i>
+                        <span>Importer</span>
+                    </button>
+                    <button class="header-btn primary" onclick="Chat.clearChat()">
+                        <i data-lucide="sparkles" class="lucide-icon-sm"></i>
+                        <span>Nouveau</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Chat Area -->
+            <div class="chat-area" id="chatArea">
+                <div class="chat-container" id="chatContainer">
+                    <!-- Welcome Screen -->
+                    <div class="welcome-screen" id="welcomeScreen">
+                        <div class="welcome-icon">
+                            <i data-lucide="wheat" class="lucide-icon-xl"></i>
+                        </div>
+                        <h2 class="welcome-title">Bienvenue sur AgriBot</h2>
+                        <p class="welcome-subtitle">
+                            Votre assistant IA interne Limagrain. Je réponds à vos questions à partir de la documentation de l'entreprise.
+                        </p>
+                        <div class="suggestion-grid">
+                            <div class="suggestion-card" onclick="Chat.sendSuggestion('Quelles sont les valeurs de Limagrain ?')">
+                                <i data-lucide="lightbulb" class="card-icon lucide-icon"></i>
+                                <div>
+                                    <div class="card-text">Valeurs de Limagrain</div>
+                                    <div class="card-hint">Audace, Coopération, Progrès...</div>
+                                </div>
+                            </div>
+                            <div class="suggestion-card" onclick="Chat.sendSuggestion('Quelle est la stratégie Ambition 2030 ?')">
+                                <i data-lucide="target" class="card-icon lucide-icon"></i>
+                                <div>
+                                    <div class="card-text">Ambition 2030</div>
+                                    <div class="card-hint">Stratégie et axes prioritaires</div>
+                                </div>
+                            </div>
+                            <div class="suggestion-card" onclick="Chat.sendSuggestion('Comment le Pôle Data & IA est-il organisé ?')">
+                                <i data-lucide="brain-circuit" class="card-icon lucide-icon"></i>
+                                <div>
+                                    <div class="card-text">Pôle Data & IA</div>
+                                    <div class="card-hint">Organisation DSI et projets IA</div>
+                                </div>
+                            </div>
+                            <div class="suggestion-card" onclick="Chat.sendSuggestion('Quels sont les cas d\'usage IA en production ?')">
+                                <i data-lucide="zap" class="card-icon lucide-icon"></i>
+                                <div>
+                                    <div class="card-text">Cas d'usage IA</div>
+                                    <div class="card-hint">Copilote agronomique, supply chain...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-container">
+                    <div class="input-wrapper">
+                        <textarea
+                            id="messageInput"
+                            placeholder="Posez votre question sur la documentation Limagrain..."
+                            rows="1"
+                            onkeydown="Chat.handleKeydown(event)"
+                            oninput="Chat.autoResize(this)"
+                        ></textarea>
+                        <button class="send-btn" id="sendBtn" onclick="Chat.send()" title="Envoyer">
+                            <i data-lucide="send" class="lucide-icon"></i>
+                        </button>
+                    </div>
+                    <div class="input-footer">
+                        <span>Entrée pour envoyer • Shift+Entrée pour retour à la ligne</span>
+                        <span class="powered-by">
+                            <i data-lucide="zap" class="lucide-icon-xs"></i>
+                            Propulsé par Groq
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal-overlay" id="uploadModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i data-lucide="upload-cloud" class="lucide-icon"></i>
+                    Importer un document
+                </h2>
+                <button class="modal-close" onclick="Upload.closeModal()">
+                    <i data-lucide="x" class="lucide-icon-sm"></i>
+                </button>
+            </div>
+            <div class="drop-zone" id="dropZone">
+                <input type="file" id="fileInput" accept=".pdf,.docx,.md,.txt" onchange="Upload.handleFile(event)">
+                <div class="drop-zone-icon">
+                    <i data-lucide="file-plus-2" class="lucide-icon-xxl"></i>
+                </div>
+                <div class="drop-zone-text">Glissez un fichier ici</div>
+                <div class="drop-zone-hint">PDF, DOCX, Markdown, TXT — Max 50 Mo</div>
+            </div>
+            <div class="upload-progress" id="uploadProgress"></div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/upload.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

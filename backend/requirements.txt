@@ -1,0 +1,22 @@
+fastapi
+uvicorn[standard]
+python-multipart
+python-dotenv
+
+# LLM Providers
+groq
+google-generativeai
+
+# Vector Store & Embeddings
+chromadb
+sentence-transformers
+
+# Hybrid Search
+rank-bm25
+
+# Document Parsing
+pypdf
+python-docx
+
+# Utils
+pydantic
